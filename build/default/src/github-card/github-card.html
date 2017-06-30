@@ -24,11 +24,7 @@
         @apply --github-card-contributor;
       }
     </style>
-    <iron-ajax
-      auto
-      url="[[repo.contributors_url]]?access_token=[[accessToken]]"
-      handle-as="json"
-      on-response="handleResponse"></iron-ajax>
+    <iron-ajax auto="" url="[[repo.contributors_url]]?access_token=[[accessToken]]" handle-as="json" on-response="handleResponse"></iron-ajax>
 
     <a href="[[repo.url]]" title="[[repo.name]]" target="_blank">[[repo.name]]</a>
     <span>[[repo.updated]]</span>

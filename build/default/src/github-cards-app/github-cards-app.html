@@ -27,11 +27,7 @@
         @apply --github-cards-filter;
       }
     </style>
-    <iron-ajax
-      auto
-      url="https://api.github.com/orgs/[[org]]/repos?access_token=[[accessToken]]"
-      handle-as="json"
-      on-response="handleResponse"></iron-ajax>
+    <iron-ajax auto="" url="https://api.github.com/orgs/[[org]]/repos?access_token=[[accessToken]]" handle-as="json" on-response="handleResponse"></iron-ajax>
 
     <div class="filters">
       Filter by:
@@ -45,10 +41,7 @@
     </div>
     <dom-repeat id="repos" items="{{repos}}" as="repo" filter="_filterRepos" observe="contributors">
       <template>
-        <github-card repo="{{repo}}"
-          access-token="[[accessToken]]"
-          on-select-contributor="_selectContributor"
-        ></github-card>
+        <github-card repo="{{repo}}" access-token="[[accessToken]]" on-select-contributor="_selectContributor"></github-card>
       </template>
     </dom-repeat>
   </template>
