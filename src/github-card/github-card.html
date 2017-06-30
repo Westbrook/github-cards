@@ -1,0 +1,86 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="github-card">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin: 30px 10px;
+        padding: 10px 20px;
+        box-shadow: 0 0 5px black;
+      }
+      .contributors {
+        flex-basis: 100%;
+        flex-shrink: 0;
+        padding: 10px 0;
+      }
+      .contributor {
+        @apply --github-card-contributor;
+      }
+    </style>
+    <iron-ajax
+      auto
+      url="[[repo.contributors_url]]?access_token=d2a09476ee8d53834bcb120014e4d644b5600e7c"
+      handle-as="json"
+      on-response="handleResponse"></iron-ajax>
+
+    <a href="[[repo.url]]" title="[[repo.name]]" target="_blank">[[repo.name]]</a>
+    <span>[[repo.updated]]</span>
+    <div class="contributors">
+      <dom-repeat id="contributors" items="[[repo.contributors]]" as="contributor">
+        <template>
+          <button class="contributor" on-tap="_select">
+            [[contributor]]
+          </button>
+        </template>
+      </dom-repeat>
+    </div>
+    <span>[[repo.forks]] forks</span>
+    <span>[[repo.stars]] stars</span>
+
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class GithubCard extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() { return 'github-card'; }
+      static get properties() {
+        return {
+          repo: {
+            type: Object
+          },
+          contributors: {
+            type: Array
+          }
+        };
+      }
+      _select(e) {
+        var index = this.$.contributors.modelForElement(e.target).index;
+        var login = this.repo.contributors[index];
+        this.dispatchEvent(new CustomEvent('select-contributor', {detail: {login: login}, bubbles: true, composed: true}));
+      }
+      handleResponse(e, response) {
+        var contributorsMap = {};
+        var contributors = response.response.map((contributor) => {
+          var login = contributor.login
+          contributorsMap[login] = login;
+          return login;
+        });
+        this.set('repo.contributors', contributors);
+        this.set('repo.contributorsMap', contributorsMap);
+      }
+    }
+
+    window.customElements.define(GithubCard.is, GithubCard);
+  </script>
+</dom-module>

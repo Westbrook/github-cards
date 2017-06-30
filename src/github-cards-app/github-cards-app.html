@@ -1,0 +1,124 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../github-card/github-card.html">
+
+<dom-module id="github-cards-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        --github-cards-filter: {
+          border: none;
+          background: black;
+          padding: 0 5px;
+          border-radius: 3px;
+          margin: 0 5px 10px 0;
+          color: white;
+          line-height: 2;
+        };
+        --github-card-contributor: {
+          @apply --github-cards-filter;
+        }
+      }
+      .filter {
+        @apply --github-cards-filter;
+      }
+    </style>
+    <iron-ajax
+      auto
+      url="https://api.github.com/orgs/[[org]]/repos?access_token=d2a09476ee8d53834bcb120014e4d644b5600e7c"
+      handle-as="json"
+      on-response="handleResponse"></iron-ajax>
+
+    <div class="filters">
+      Filter by:
+      <dom-repeat id="contributors" items="[[selectedContributors]]" as="contributor">
+        <template>
+          <button class="filter" on-tap="_removeContributor">
+            [[contributor]]
+          </button>
+        </template>
+      </dom-repeat>
+    </div>
+    <dom-repeat id="repos" items="{{repos}}" as="repo" filter="_filterRepos" observe="contributors">
+      <template>
+        <github-card repo="{{repo}}"
+          on-select-contributor="_selectContributor"
+        ></github-card>
+      </template>
+    </dom-repeat>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class GithubCardsApp extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() { return 'github-cards-app'; }
+      static get properties() {
+        return {
+          org: {
+            type: String,
+            value: 'facebook'
+          },
+          repos: {
+            type: Array
+          },
+          selectedContributors: {
+            type: Array,
+            value: function() {
+              return [];
+            },
+            observer: '_selectedContributorsChanged'
+          }
+        };
+      }
+      handleResponse(e, response) {
+        var repos = response.response.map((repo) => {
+          return {
+            name: repo.name,
+            url: repo.html_url,
+            updated: repo.updated_at,
+            forks: repo.forks_count,
+            stars: repo.stargazers_count,
+            contributors_url: repo.contributors_url,
+            contributors: [],
+            contributorsMap: {}
+          }
+        });
+        this.repos = repos;
+      }
+      _filterRepos(repo) {
+        var show = false;
+        if (this.selectedContributors.length === 0) return true;
+        this.selectedContributors.map((contributor) => {
+          if (contributor in repo.contributorsMap) show = true;
+        });
+        return show;
+      }
+      _selectedContributorsChanged() {
+        this.$.repos.render();
+      }
+      _selectContributor(e) {
+        var login = e.detail.login;
+        var contributors = this.selectedContributors;
+        if (this.selectedContributors.indexOf(login) === -1) {
+          contributors.push(login);
+          this.selectedContributors = contributors.slice();
+        }
+      }
+      _removeContributor(e) {
+        var index = this.$.contributors.modelForElement(e.target).index;
+        var contributors = this.selectedContributors;
+        contributors.splice(index, 1);
+        this.selectedContributors = contributors.slice();
+      }
+    }
+
+    window.customElements.define(GithubCardsApp.is, GithubCardsApp);
+  </script>
+</dom-module>
