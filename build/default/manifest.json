@@ -1,0 +1,7 @@
+{
+  "name": "github-cards",
+  "short_name": "github-cards",
+  "description": "Lists cards representing the repos of a GitHub organization",
+  "start_url": "/",
+  "display": "standalone"
+}
